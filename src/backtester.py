@@ -1,4 +1,5 @@
 import sys
+from typing import List
 
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -30,13 +31,13 @@ class Backtester:
     def __init__(
         self,
         agent: Callable,
-        tickers: list[str],
+        tickers: List[str],
         start_date: str,
         end_date: str,
         initial_capital: float,
         model_name: str = "gpt-4o",
         model_provider: str = "OpenAI",
-        selected_analysts: list[str] = [],
+        selected_analysts: List[str] = [],
         initial_margin_requirement: float = 0.0,
     ):
         """

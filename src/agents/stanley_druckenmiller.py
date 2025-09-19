@@ -1,4 +1,5 @@
 from graph.state import AgentState, show_agent_reasoning
+from typing import List, Dict, Any, Optional
 from tools.api import (
     get_financial_metrics,
     get_market_cap,
@@ -340,7 +341,7 @@ def analyze_sentiment(news_items: list) -> dict:
     return {"score": score, "details": "; ".join(details)}
 
 
-def analyze_risk_reward(financial_line_items: list, market_cap: float | None, prices: list) -> dict:
+def analyze_risk_reward(financial_line_items: List, market_cap: Optional[float], prices: List) -> Dict:
     """
     Assesses risk via:
       - Debt-to-Equity
@@ -414,7 +415,7 @@ def analyze_risk_reward(financial_line_items: list, market_cap: float | None, pr
     return {"score": final_score, "details": "; ".join(details)}
 
 
-def analyze_druckenmiller_valuation(financial_line_items: list, market_cap: float | None) -> dict:
+def analyze_druckenmiller_valuation(financial_line_items: List, market_cap: Optional[float]) -> Dict:
     """
     Druckenmiller is willing to pay up for growth, but still checks:
       - P/E

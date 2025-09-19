@@ -1,4 +1,5 @@
 import sys
+from typing import List
 
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
@@ -51,12 +52,12 @@ def parse_hedge_fund_response(response):
 
 ##### Run the Hedge Fund #####
 def run_hedge_fund(
-    tickers: list[str],
+    tickers: List[str],
     start_date: str,
     end_date: str,
     portfolio: dict,
     show_reasoning: bool = False,
-    selected_analysts: list[str] = [],
+    selected_analysts: List[str] = [],
     model_name: str = "gpt-4o",
     model_provider: str = "OpenAI",
 ):

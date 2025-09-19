@@ -6,7 +6,7 @@ from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from enum import Enum
 from pydantic import BaseModel
-from typing import Tuple
+from typing import Tuple, Optional, Union
 
 
 class ModelProvider(str, Enum):
@@ -109,11 +109,11 @@ AVAILABLE_MODELS = [
 # Create LLM_ORDER in the format expected by the UI
 LLM_ORDER = [model.to_choice_tuple() for model in AVAILABLE_MODELS]
 
-def get_model_info(model_name: str) -> LLMModel | None:
+def get_model_info(model_name: str) -> Optional[LLMModel]:
     """Get model information by model_name"""
     return next((model for model in AVAILABLE_MODELS if model.model_name == model_name), None)
 
-def get_model(model_name: str, model_provider: ModelProvider) -> ChatOpenAI | ChatGroq | None:
+def get_model(model_name: str, model_provider: ModelProvider) -> Optional[Union[ChatOpenAI, ChatGroq]]:
     if model_provider == ModelProvider.GROQ:
         api_key = os.getenv("GROQ_API_KEY")
         if not api_key:

@@ -5,6 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from graph.state import AgentState, show_agent_reasoning
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
+from typing import List
 from utils.progress import progress
 from utils.llm import call_llm
 
@@ -89,7 +90,7 @@ def portfolio_management_agent(state: AgentState):
 
 
 def generate_trading_decision(
-    tickers: list[str],
+    tickers: List[str],
     signals_by_ticker: dict[str, dict],
     current_prices: dict[str, float],
     max_shares: dict[str, int],
