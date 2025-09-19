@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 import requests
+import yfinance as yf
+from datetime import datetime
 from typing import List, Optional
 
 from data.cache import get_cache
@@ -281,3 +283,192 @@ def prices_to_df(prices: List[Price]) -> pd.DataFrame:
 def get_price_data(ticker: str, start_date: str, end_date: str) -> pd.DataFrame:
     prices = get_prices(ticker, start_date, end_date)
     return prices_to_df(prices)
+
+
+# ============================================================================
+# YAHOO FINANCE API FUNCTIONS (FREE ALTERNATIVE)
+# ============================================================================
+
+def get_yahoo_prices(ticker: str, start_date: str, end_date: str) -> List[Price]:
+    """Fetch price data from Yahoo Finance (FREE)."""
+    try:
+        # Create yfinance ticker object
+        yf_ticker = yf.Ticker(ticker)
+        
+        # Download historical data
+        hist = yf_ticker.history(start=start_date, end=end_date)
+        
+        if hist.empty:
+            return []
+        
+        # Convert to our Price format
+        prices = []
+        for date, row in hist.iterrows():
+            price = Price(
+                open=float(row['Open']),
+                close=float(row['Close']),
+                high=float(row['High']),
+                low=float(row['Low']),
+                volume=int(row['Volume']),
+                time=date.strftime('%Y-%m-%d')
+            )
+            prices.append(price)
+        
+        return prices
+        
+    except Exception as e:
+        print(f"Error fetching Yahoo Finance data for {ticker}: {e}")
+        return []
+
+
+def get_yahoo_financial_info(ticker: str) -> dict:
+    """Get basic financial information from Yahoo Finance (FREE)."""
+    try:
+        yf_ticker = yf.Ticker(ticker)
+        info = yf_ticker.info
+        
+        # Extract key financial metrics
+        financial_info = {
+            'market_cap': info.get('marketCap'),
+            'enterprise_value': info.get('enterpriseValue'),
+            'price_to_earnings_ratio': info.get('trailingPE'),
+            'price_to_book_ratio': info.get('priceToBook'),
+            'price_to_sales_ratio': info.get('priceToSalesTrailing12Months'),
+            'enterprise_value_to_ebitda_ratio': info.get('enterpriseToEbitda'),
+            'enterprise_value_to_revenue_ratio': info.get('enterpriseToRevenue'),
+            'gross_margin': info.get('grossMargins'),
+            'operating_margin': info.get('operatingMargins'),
+            'net_margin': info.get('profitMargins'),
+            'return_on_equity': info.get('returnOnEquity'),
+            'return_on_assets': info.get('returnOnAssets'),
+            'debt_to_equity': info.get('debtToEquity'),
+            'current_ratio': info.get('currentRatio'),
+            'quick_ratio': info.get('quickRatio'),
+            'revenue_growth': info.get('revenueGrowth'),
+            'earnings_growth': info.get('earningsGrowth'),
+            'book_value_per_share': info.get('bookValue'),
+            'earnings_per_share': info.get('trailingEps'),
+            'free_cash_flow': info.get('freeCashflow'),
+            'operating_cash_flow': info.get('operatingCashflow'),
+            'total_debt': info.get('totalDebt'),
+            'total_cash': info.get('totalCash'),
+            'shares_outstanding': info.get('sharesOutstanding'),
+            'dividend_yield': info.get('dividendYield'),
+            'payout_ratio': info.get('payoutRatio'),
+            'beta': info.get('beta'),
+            '52_week_high': info.get('fiftyTwoWeekHigh'),
+            '52_week_low': info.get('fiftyTwoWeekLow'),
+            'sector': info.get('sector'),
+            'industry': info.get('industry'),
+            'company_name': info.get('longName'),
+            'currency': info.get('currency'),
+        }
+        
+        return financial_info
+        
+    except Exception as e:
+        print(f"Error fetching Yahoo Finance info for {ticker}: {e}")
+        return {}
+
+
+def get_yahoo_news(ticker: str, limit: int = 10) -> List[CompanyNews]:
+    """Get company news from Yahoo Finance (FREE)."""
+    try:
+        yf_ticker = yf.Ticker(ticker)
+        news = yf_ticker.news
+        
+        if not news:
+            return []
+        
+        # Convert to our CompanyNews format
+        company_news = []
+        for article in news[:limit]:
+            news_item = CompanyNews(
+                ticker=ticker,
+                title=article.get('title', ''),
+                author=article.get('publisher', ''),
+                source=article.get('publisher', ''),
+                date=datetime.fromtimestamp(article.get('providerPublishTime', 0)).strftime('%Y-%m-%d'),
+                url=article.get('link', ''),
+                sentiment=None  # Yahoo Finance doesn't provide sentiment
+            )
+            company_news.append(news_item)
+        
+        return company_news
+        
+    except Exception as e:
+        print(f"Error fetching Yahoo Finance news for {ticker}: {e}")
+        return []
+
+
+def get_yahoo_financials(ticker: str) -> dict:
+    """Get financial statements from Yahoo Finance (FREE)."""
+    try:
+        yf_ticker = yf.Ticker(ticker)
+        
+        # Get financial statements
+        financials = yf_ticker.financials
+        balance_sheet = yf_ticker.balance_sheet
+        cash_flow = yf_ticker.cashflow
+        
+        return {
+            'income_statement': financials.to_dict() if not financials.empty else {},
+            'balance_sheet': balance_sheet.to_dict() if not balance_sheet.empty else {},
+            'cash_flow': cash_flow.to_dict() if not cash_flow.empty else {}
+        }
+        
+    except Exception as e:
+        print(f"Error fetching Yahoo Finance financials for {ticker}: {e}")
+        return {}
+
+
+# ============================================================================
+# UNIFIED API FUNCTIONS (AUTO-SELECT BEST AVAILABLE)
+# ============================================================================
+
+def get_prices_unified(ticker: str, start_date: str, end_date: str, use_yahoo: bool = True) -> List[Price]:
+    """Get prices from the best available source."""
+    if use_yahoo:
+        # Try Yahoo Finance first (free)
+        prices = get_yahoo_prices(ticker, start_date, end_date)
+        if prices:
+            return prices
+    
+    # Fallback to Financial Datasets API
+    return get_prices(ticker, start_date, end_date)
+
+
+def get_financial_info_unified(ticker: str, use_yahoo: bool = True) -> dict:
+    """Get financial info from the best available source."""
+    if use_yahoo:
+        # Try Yahoo Finance first (free)
+        info = get_yahoo_financial_info(ticker)
+        if info:
+            return info
+    
+    # Fallback to Financial Datasets API
+    try:
+        financial_metrics = get_financial_metrics(ticker, datetime.now().strftime('%Y-%m-%d'))
+        if financial_metrics:
+            return financial_metrics[0].model_dump()
+    except:
+        pass
+    
+    return {}
+
+
+def get_news_unified(ticker: str, limit: int = 10, use_yahoo: bool = True) -> List[CompanyNews]:
+    """Get news from the best available source."""
+    if use_yahoo:
+        # Try Yahoo Finance first (free)
+        news = get_yahoo_news(ticker, limit)
+        if news:
+            return news
+    
+    # Fallback to Financial Datasets API
+    try:
+        return get_company_news(ticker, datetime.now().strftime('%Y-%m-%d'), limit=limit)
+    except:
+        pass
+    
+    return []
