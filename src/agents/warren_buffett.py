@@ -754,17 +754,10 @@ def generate_buffett_output(
 
     # --- Build compact facts here ---
     facts = {
-        "score": analysis_data.get("score"),
-        "max_score": analysis_data.get("max_score"),
-        "fundamentals": analysis_data.get("fundamental_analysis", {}).get("details"),
-        "consistency": analysis_data.get("consistency_analysis", {}).get("details"),
-        "moat": analysis_data.get("moat_analysis", {}).get("details"),
-        "pricing_power": analysis_data.get("pricing_power_analysis", {}).get("details"),
-        "book_value": analysis_data.get("book_value_analysis", {}).get("details"),
-        "management": analysis_data.get("management_analysis", {}).get("details"),
-        "intrinsic_value": analysis_data.get("intrinsic_value_analysis", {}).get("intrinsic_value"),
-        "market_cap": analysis_data.get("market_cap"),
-        "margin_of_safety": analysis_data.get("margin_of_safety"),
+        "score": f"{analysis_data.get('score', 0)}/{analysis_data.get('max_score', 1)}",
+        "roe": analysis_data.get("fundamental_analysis", {}).get("details", "N/A")[:50],
+        "moat": analysis_data.get("moat_analysis", {}).get("details", "N/A")[:50],
+        "margin_of_safety": f"{analysis_data.get('margin_of_safety', 0):.1%}" if analysis_data.get('margin_of_safety') else "N/A",
     }
 
     template = ChatPromptTemplate.from_messages(

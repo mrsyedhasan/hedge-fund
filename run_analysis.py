@@ -60,7 +60,7 @@ def main():
             start_date=start_date,
             end_date=end_date,
             portfolio=portfolio,
-            show_reasoning=True,
+            show_reasoning=True,  # Enable verbose reasoning to see detailed results
             model_name="mistral:7b-instruct",
             model_provider=ModelProvider.OLLAMA
         )
