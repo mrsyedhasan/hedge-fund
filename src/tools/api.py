@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import requests
 import time
+from typing import Optional, List
 
 from src.data.cache import get_cache
 from src.data.models import (
@@ -57,7 +58,7 @@ def _make_api_request(url: str, headers: dict, method: str = "GET", json_data: d
         return response
 
 
-def get_prices(ticker: str, start_date: str, end_date: str, api_key: str = None) -> list[Price]:
+def get_prices(ticker: str, start_date: str, end_date: str, api_key: Optional[str] = None) -> List[Price]:
     """Fetch price data from cache or API."""
     # Create a cache key that includes all parameters to ensure exact matches
     cache_key = f"{ticker}_{start_date}_{end_date}"
@@ -94,8 +95,8 @@ def get_financial_metrics(
     end_date: str,
     period: str = "ttm",
     limit: int = 10,
-    api_key: str = None,
-) -> list[FinancialMetrics]:
+    api_key: Optional[str] = None,
+) -> List[FinancialMetrics]:
     """Fetch financial metrics from cache or API."""
     # Create a cache key that includes all parameters to ensure exact matches
     cache_key = f"{ticker}_{period}_{end_date}_{limit}"
@@ -129,12 +130,12 @@ def get_financial_metrics(
 
 def search_line_items(
     ticker: str,
-    line_items: list[str],
+    line_items: List[str],
     end_date: str,
     period: str = "ttm",
     limit: int = 10,
-    api_key: str = None,
-) -> list[LineItem]:
+    api_key: Optional[str] = None,
+) -> List[LineItem]:
     """Fetch line items from API."""
     # If not in cache or insufficient data, fetch from API
     headers = {}
@@ -167,10 +168,10 @@ def search_line_items(
 def get_insider_trades(
     ticker: str,
     end_date: str,
-    start_date: str | None = None,
+    start_date: Optional[str] = None,
     limit: int = 1000,
-    api_key: str = None,
-) -> list[InsiderTrade]:
+    api_key: Optional[str] = None,
+) -> List[InsiderTrade]:
     """Fetch insider trades from cache or API."""
     # Create a cache key that includes all parameters to ensure exact matches
     cache_key = f"{ticker}_{start_date or 'none'}_{end_date}_{limit}"
@@ -229,10 +230,10 @@ def get_insider_trades(
 def get_company_news(
     ticker: str,
     end_date: str,
-    start_date: str | None = None,
+    start_date: Optional[str] = None,
     limit: int = 1000,
-    api_key: str = None,
-) -> list[CompanyNews]:
+    api_key: Optional[str] = None,
+) -> List[CompanyNews]:
     """Fetch company news from cache or API."""
     # Create a cache key that includes all parameters to ensure exact matches
     cache_key = f"{ticker}_{start_date or 'none'}_{end_date}_{limit}"
@@ -291,8 +292,8 @@ def get_company_news(
 def get_market_cap(
     ticker: str,
     end_date: str,
-    api_key: str = None,
-) -> float | None:
+    api_key: Optional[str] = None,
+) -> Optional[float]:
     """Fetch market cap from the API."""
     # Check if end_date is today
     if end_date == datetime.datetime.now().strftime("%Y-%m-%d"):
@@ -324,7 +325,7 @@ def get_market_cap(
     return market_cap
 
 
-def prices_to_df(prices: list[Price]) -> pd.DataFrame:
+def prices_to_df(prices: List[Price]) -> pd.DataFrame:
     """Convert prices to a DataFrame."""
     df = pd.DataFrame([p.model_dump() for p in prices])
     df["Date"] = pd.to_datetime(df["time"])
@@ -337,6 +338,6 @@ def prices_to_df(prices: list[Price]) -> pd.DataFrame:
 
 
 # Update the get_price_data function to use the new functions
-def get_price_data(ticker: str, start_date: str, end_date: str, api_key: str = None) -> pd.DataFrame:
+def get_price_data(ticker: str, start_date: str, end_date: str, api_key: Optional[str] = None) -> pd.DataFrame:
     prices = get_prices(ticker, start_date, end_date, api_key=api_key)
     return prices_to_df(prices)

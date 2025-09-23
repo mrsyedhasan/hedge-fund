@@ -14,7 +14,7 @@ class OutputBuilder:
     Stateless: callers provide inputs and receive rows back.
     """
 
-    def __init__(self, *, initial_capital: float | None = None) -> None:
+    def __init__(self, *, initial_capital: Optional[float] = None) -> None:
         self._initial_capital = initial_capital
 
     def build_day_rows(
@@ -26,9 +26,9 @@ class OutputBuilder:
         executed_trades: Mapping[str, int],
         current_prices: Mapping[str, float],
         portfolio: Portfolio,
-        performance_metrics: Mapping[str, float | None],
+        performance_metrics: Mapping[str, Optional[float]],
         total_value: float,
-        benchmark_return_pct: float | None = None,
+        benchmark_return_pct: Optional[float] = None,
     ) -> List[list]:
         date_rows: List[list] = []
 

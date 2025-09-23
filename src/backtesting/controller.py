@@ -16,7 +16,7 @@ class AgentController:
         tickers: Sequence[str],
         start_date: str,
         end_date: str,
-        portfolio: Portfolio | PortfolioSnapshot,
+        portfolio: Union[Portfolio, PortfolioSnapshot],
         model_name: str,
         model_provider: str,
         selected_analysts: Sequence[str] | None,

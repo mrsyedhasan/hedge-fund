@@ -7,7 +7,7 @@ from colorama import Fore, Style
 
 from src.utils.analysts import ANALYST_ORDER
 from src.llm.models import LLM_ORDER, OLLAMA_LLM_ORDER, get_model_info, ModelProvider
-from src.utils.ollama import ensure_ollama_and_model
+# Removed ollama import - not needed for direct script usage
 
 from dataclasses import dataclass
 from typing import Optional
@@ -43,7 +43,7 @@ def add_common_args(
     return parser
 
 
-def add_date_args(parser: argparse.ArgumentParser, *, default_months_back: int | None = None) -> argparse.ArgumentParser:
+def add_date_args(parser: argparse.ArgumentParser, *, default_months_back: Optional[int] = None) -> argparse.ArgumentParser:
     if default_months_back is None:
         parser.add_argument("--start-date", type=str, help="Start date (YYYY-MM-DD)")
         parser.add_argument("--end-date", type=str, help="End date (YYYY-MM-DD)")
@@ -63,13 +63,13 @@ def add_date_args(parser: argparse.ArgumentParser, *, default_months_back: int |
     return parser
 
 
-def parse_tickers(tickers_arg: str | None) -> list[str]:
+def parse_tickers(tickers_arg: Optional[str]) -> list[str]:
     if not tickers_arg:
         return []
     return [ticker.strip() for ticker in tickers_arg.split(",") if ticker.strip()]
 
 
-def select_analysts(flags: dict | None = None) -> list[str]:
+def select_analysts(flags: Optional[dict] = None) -> list[str]:
     if flags and flags.get("analysts_all"):
         return [a[1] for a in ANALYST_ORDER]
 
@@ -103,7 +103,7 @@ def select_analysts(flags: dict | None = None) -> list[str]:
 
 def select_model(use_ollama: bool) -> tuple[str, str]:
     model_name: str = ""
-    model_provider: str | None = None
+    model_provider: Optional[str] = None
 
     if use_ollama:
         print(f"{Fore.CYAN}Using Ollama for local LLM inference.{Style.RESET_ALL}")
@@ -130,9 +130,10 @@ def select_model(use_ollama: bool) -> tuple[str, str]:
                 print("\n\nInterrupt received. Exiting...")
                 sys.exit(0)
 
-        if not ensure_ollama_and_model(model_name):
-            print(f"{Fore.RED}Cannot proceed without Ollama and the selected model.{Style.RESET_ALL}")
-            sys.exit(1)
+        # Skip Ollama validation for direct script usage
+        # if not ensure_ollama_and_model(model_name):
+        #     print(f"{Fore.RED}Cannot proceed without Ollama and the selected model.{Style.RESET_ALL}")
+        #     sys.exit(1)
 
         model_provider = ModelProvider.OLLAMA.value
         print(
@@ -176,7 +177,7 @@ def select_model(use_ollama: bool) -> tuple[str, str]:
     return model_name, model_provider or ""
 
 
-def resolve_dates(start_date: str | None, end_date: str | None, *, default_months_back: int | None = None) -> tuple[str, str]:
+def resolve_dates(start_date: Optional[str], end_date: Optional[str], *, default_months_back: Optional[int] = None) -> tuple[str, str]:
     if start_date:
         try:
             datetime.strptime(start_date, "%Y-%m-%d")
@@ -217,7 +218,7 @@ def parse_cli_inputs(
     *,
     description: str,
     require_tickers: bool,
-    default_months_back: int | None,
+    default_months_back: Optional[int],
     include_graph_flag: bool = False,
     include_reasoning_flag: bool = False,
 ) -> CLIInputs:

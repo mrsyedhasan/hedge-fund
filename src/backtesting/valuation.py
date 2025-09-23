@@ -55,9 +55,9 @@ def compute_portfolio_summary(
     *,
     portfolio: Portfolio,
     total_value: float,
-    initial_value: float | None,
-    performance_metrics: _MappingAny[str, float | None],
-) -> Dict[str, float | None]:
+    initial_value: Optional[float],
+    performance_metrics: _MappingAny[str, Optional[float]],
+) -> Dict[str, Optional[float]]:
     """Compute portfolio summary fields in a pure, testable function.
 
     Returns a dict with keys matching the arguments used by format_backtest_row

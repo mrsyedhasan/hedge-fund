@@ -11,7 +11,7 @@ import statistics
 from langchain_core.messages import HumanMessage
 from src.graph.state import AgentState, show_agent_reasoning
 from src.utils.progress import progress
-from src.utils.api_key import get_api_key_from_state
+# Removed api_key import - not needed for Ollama setup
 from src.tools.api import (
     get_financial_metrics,
     get_market_cap,
@@ -24,7 +24,7 @@ def valuation_analyst_agent(state: AgentState, agent_id: str = "valuation_analys
     data = state["data"]
     end_date = data["end_date"]
     tickers = data["tickers"]
-    api_key = get_api_key_from_state(state, "FINANCIAL_DATASETS_API_KEY")
+    api_key = None  # No API key needed for Ollama setup
     valuation_analysis: dict[str, dict] = {}
 
     for ticker in tickers:
@@ -224,10 +224,10 @@ def valuation_analyst_agent(state: AgentState, agent_id: str = "valuation_analys
 #############################
 
 def calculate_owner_earnings_value(
-    net_income: float | None,
-    depreciation: float | None,
-    capex: float | None,
-    working_capital_change: float | None,
+    net_income: Optional[float],
+    depreciation: Optional[float],
+    capex: Optional[float],
+    working_capital_change: Optional[float],
     growth_rate: float = 0.05,
     required_return: float = 0.15,
     margin_of_safety: float = 0.25,
@@ -257,7 +257,7 @@ def calculate_owner_earnings_value(
 
 
 def calculate_intrinsic_value(
-    free_cash_flow: float | None,
+    free_cash_flow: Optional[float],
     growth_rate: float = 0.05,
     discount_rate: float = 0.10,
     terminal_growth_rate: float = 0.02,
@@ -300,9 +300,9 @@ def calculate_ev_ebitda_value(financial_metrics: list):
 
 
 def calculate_residual_income_value(
-    market_cap: float | None,
-    net_income: float | None,
-    price_to_book_ratio: float | None,
+    market_cap: Optional[float],
+    net_income: Optional[float],
+    price_to_book_ratio: Optional[float],
     book_value_growth: float = 0.03,
     cost_of_equity: float = 0.10,
     terminal_growth_rate: float = 0.03,
@@ -337,10 +337,10 @@ def calculate_residual_income_value(
 
 def calculate_wacc(
     market_cap: float,
-    total_debt: float | None,
-    cash: float | None,
-    interest_coverage: float | None,
-    debt_to_equity: float | None,
+    total_debt: Optional[float],
+    cash: Optional[float],
+    interest_coverage: Optional[float],
+    debt_to_equity: Optional[float],
     beta_proxy: float = 1.0,
     risk_free_rate: float = 0.045,
     market_risk_premium: float = 0.06
@@ -396,7 +396,7 @@ def calculate_enhanced_dcf_value(
     growth_metrics: dict,
     wacc: float,
     market_cap: float,
-    revenue_growth: float | None = None
+    revenue_growth: Optional[float] = None
 ) -> float:
     """Enhanced DCF with multi-stage growth."""
     
@@ -453,7 +453,7 @@ def calculate_dcf_scenarios(
     growth_metrics: dict,
     wacc: float,
     market_cap: float,
-    revenue_growth: float | None = None
+    revenue_growth: Optional[float] = None
 ) -> dict:
     """Calculate DCF under multiple scenarios."""
     

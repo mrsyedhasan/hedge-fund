@@ -1,6 +1,7 @@
 """Helper functions for LLM"""
 
 import json
+from typing import Union, Optional
 from pydantic import BaseModel
 from src.llm.models import get_model, get_model_info
 from src.utils.progress import progress
@@ -10,8 +11,8 @@ from src.graph.state import AgentState
 def call_llm(
     prompt: any,
     pydantic_model: type[BaseModel],
-    agent_name: str | None = None,
-    state: AgentState | None = None,
+    agent_name: Optional[str] = None,
+    state: Optional[AgentState] = None,
     max_retries: int = 3,
     default_factory=None,
 ) -> BaseModel:
@@ -35,8 +36,8 @@ def call_llm(
         model_name, model_provider = get_agent_model_config(state, agent_name)
     else:
         # Use system defaults when no state or agent_name is provided
-        model_name = "gpt-4.1"
-        model_provider = "OPENAI"
+        model_name = "mistral:7b-instruct"
+        model_provider = "Ollama"
 
     # Extract API keys from state if available
     api_keys = None
@@ -45,7 +46,12 @@ def call_llm(
         if request and hasattr(request, 'api_keys'):
             api_keys = request.api_keys
 
-    model_info = get_model_info(model_name, model_provider)
+    # Convert string model_provider to ModelProvider enum
+    if isinstance(model_provider, str):
+        from src.llm.models import ModelProvider
+        model_provider = ModelProvider(model_provider)
+    
+    model_info = get_model_info(model_name, model_provider.value)
     llm = get_model(model_name, model_provider, api_keys)
 
     # For non-JSON support models, we can use structured output
@@ -106,18 +112,53 @@ def create_default_response(model_class: type[BaseModel]) -> BaseModel:
     return model_class(**default_values)
 
 
-def extract_json_from_response(content: str) -> dict | None:
-    """Extracts JSON from markdown-formatted response."""
+def extract_json_from_response(content: str) -> Optional[dict]:
+    """Extracts JSON from response."""
+    import json
     try:
+        # Method 1: Try to find JSON in markdown code blocks
         json_start = content.find("```json")
         if json_start != -1:
-            json_text = content[json_start + 7 :]  # Skip past ```json
+            json_text = content[json_start + 7:]  # Skip past ```json
             json_end = json_text.find("```")
             if json_end != -1:
                 json_text = json_text[:json_end].strip()
-                return json.loads(json_text)
+                try:
+                    return json.loads(json_text)
+                except:
+                    pass
+        
+        # Method 2: Try to find JSON in regular code blocks
+        json_start = content.find("```")
+        if json_start != -1:
+            json_text = content[json_start + 3:]
+            json_end = json_text.find("```")
+            if json_end != -1:
+                json_text = json_text[:json_end].strip()
+                try:
+                    return json.loads(json_text)
+                except:
+                    pass
+        
+        # Method 3: Try to parse the entire content as JSON
+        try:
+            return json.loads(content.strip())
+        except:
+            pass
+        
+        # Method 4: Try to find JSON object with braces
+        start_idx = content.find('{')
+        end_idx = content.rfind('}') + 1
+        if start_idx != -1 and end_idx > start_idx:
+            json_str = content[start_idx:end_idx]
+            try:
+                return json.loads(json_str)
+            except:
+                pass
+                    
     except Exception as e:
         print(f"Error extracting JSON from response: {e}")
+    
     return None
 
 

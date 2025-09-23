@@ -8,9 +8,10 @@ from src.backtesting.types import PerformanceMetrics
 from src.cli.input import (
     parse_cli_inputs,
 )
+from typing import Union, Optional
 
 
-def run_backtest(backtester: BacktestEngine) -> PerformanceMetrics | None:
+def run_backtest(backtester: BacktestEngine) -> Optional[PerformanceMetrics]:
     """Run the backtest with graceful KeyboardInterrupt handling."""
     try:
         performance_metrics = backtester.run_backtest()

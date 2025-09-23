@@ -3,10 +3,11 @@ from __future__ import annotations
 import pandas as pd
 
 from src.tools.api import get_price_data
+from typing import Union, Optional
 
 
 class BenchmarkCalculator:
-    def get_return_pct(self, ticker: str, start_date: str, end_date: str) -> float | None:
+    def get_return_pct(self, ticker: str, start_date: str, end_date: str) -> Optional[float]:
         """Compute simple buy-and-hold return % for ticker from start_date to end_date.
 
         Return is (last_close / first_close - 1) * 100, or None if unavailable.

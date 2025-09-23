@@ -89,8 +89,8 @@ class BacktestEngine:
             get_insider_trades(ticker, self._end_date, start_date=self._start_date, limit=1000)
             get_company_news(ticker, self._end_date, start_date=self._start_date, limit=1000)
         
-        # Preload data for SPY for benchmark comparison
-        get_prices("SPY", self._start_date, self._end_date)
+        # Preload data for GOOGL as benchmark comparison (available without API key)
+        get_prices("GOOGL", self._start_date, self._end_date)
 
 
     def run_backtest(self) -> PerformanceMetrics:

@@ -7,7 +7,8 @@ import json
 from typing_extensions import Literal
 from src.utils.progress import progress
 from src.utils.llm import call_llm
-from src.utils.api_key import get_api_key_from_state
+# Removed api_key import - not needed for Ollama setup
+from typing import Union, Optional
 
 
 class MohnishPabraiSignal(BaseModel):
@@ -21,7 +22,7 @@ def mohnish_pabrai_agent(state: AgentState, agent_id: str = "mohnish_pabrai_agen
     data = state["data"]
     end_date = data["end_date"]
     tickers = data["tickers"]
-    api_key = get_api_key_from_state(state, "FINANCIAL_DATASETS_API_KEY")
+    api_key = None  # No API key needed for Ollama setup
 
     analysis_data: dict[str, any] = {}
     pabrai_analysis: dict[str, any] = {}
@@ -193,7 +194,7 @@ def analyze_downside_protection(financial_line_items: list) -> dict[str, any]:
     return {"score": min(10, score), "details": "; ".join(details)}
 
 
-def analyze_pabrai_valuation(financial_line_items: list, market_cap: float | None) -> dict[str, any]:
+def analyze_pabrai_valuation(financial_line_items: list, market_cap: Optional[float]) -> dict[str, any]:
     """Value via simple FCF yield and asset-light preference (keep it simple, low mistakes)."""
     if not financial_line_items or market_cap is None or market_cap <= 0:
         return {"score": 0, "details": "Insufficient data", "fcf_yield": None, "normalized_fcf": None}
@@ -250,7 +251,7 @@ def analyze_pabrai_valuation(financial_line_items: list, market_cap: float | Non
     return {"score": min(10, score), "details": "; ".join(details), "fcf_yield": fcf_yield, "normalized_fcf": normalized_fcf}
 
 
-def analyze_double_potential(financial_line_items: list, market_cap: float | None) -> dict[str, any]:
+def analyze_double_potential(financial_line_items: list, market_cap: Optional[float]) -> dict[str, any]:
     """Estimate low-risk path to double capital in ~2-3 years: runway from FCF growth + rerating."""
     if not financial_line_items or market_cap is None or market_cap <= 0:
         return {"score": 0, "details": "Insufficient data"}

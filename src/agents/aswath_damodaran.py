@@ -13,9 +13,10 @@ from src.tools.api import (
     get_market_cap,
     search_line_items,
 )
-from src.utils.api_key import get_api_key_from_state
+# Removed api_key import - not needed for Ollama setup
 from src.utils.llm import call_llm
 from src.utils.progress import progress
+from typing import Union, Optional
 
 
 class AswathDamodaranSignal(BaseModel):
@@ -36,7 +37,7 @@ def aswath_damodaran_agent(state: AgentState, agent_id: str = "aswath_damodaran_
     data      = state["data"]
     end_date  = data["end_date"]
     tickers   = data["tickers"]
-    api_key  = get_api_key_from_state(state, "FINANCIAL_DATASETS_API_KEY")
+    api_key = None  # No API key needed for Ollama setup
 
     analysis_data: dict[str, dict] = {}
     damodaran_signals: dict[str, dict] = {}
@@ -347,7 +348,7 @@ def calculate_intrinsic_value_dcf(metrics: list, line_items: list, risk_analysis
     }
 
 
-def estimate_cost_of_equity(beta: float | None) -> float:
+def estimate_cost_of_equity(beta: Optional[float]) -> float:
     """CAPM: r_e = r_f + β × ERP (use Damodaran's long-term averages)."""
     risk_free = 0.04          # 10-yr US Treasury proxy
     erp = 0.05                # long-run US equity risk premium

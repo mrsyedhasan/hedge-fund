@@ -3,6 +3,7 @@ from tabulate import tabulate
 from .analysts import ANALYST_ORDER
 import os
 import json
+from typing import Union, Optional
 
 
 def sort_agent_signals(signals):
@@ -319,7 +320,7 @@ def format_backtest_row(
     sharpe_ratio: float = None,
     sortino_ratio: float = None,
     max_drawdown: float = None,
-    benchmark_return_pct: float | None = None,
+    benchmark_return_pct: Optional[float] = None,
 ) -> list[any]:
     """Format a row for the backtest results table"""
     # Color the action

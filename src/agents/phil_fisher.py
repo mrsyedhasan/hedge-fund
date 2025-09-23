@@ -13,7 +13,8 @@ from typing_extensions import Literal
 from src.utils.progress import progress
 from src.utils.llm import call_llm
 import statistics
-from src.utils.api_key import get_api_key_from_state
+# Removed api_key import - not needed for Ollama setup
+from typing import Union, Optional
 
 class PhilFisherSignal(BaseModel):
     signal: Literal["bullish", "bearish", "neutral"]
@@ -36,7 +37,7 @@ def phil_fisher_agent(state: AgentState, agent_id: str = "phil_fisher_agent"):
     data = state["data"]
     end_date = data["end_date"]
     tickers = data["tickers"]
-    api_key = get_api_key_from_state(state, "FINANCIAL_DATASETS_API_KEY")
+    api_key = None  # No API key needed for Ollama setup
     analysis_data = {}
     fisher_analysis = {}
 
@@ -401,7 +402,7 @@ def analyze_management_efficiency_leverage(financial_line_items: list) -> dict:
     return {"score": final_score, "details": "; ".join(details)}
 
 
-def analyze_fisher_valuation(financial_line_items: list, market_cap: float | None) -> dict:
+def analyze_fisher_valuation(financial_line_items: list, market_cap: Optional[float]) -> dict:
     """
     Phil Fisher is willing to pay for quality and growth, but still checks:
       - P/E
